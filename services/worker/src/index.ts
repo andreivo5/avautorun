@@ -6,14 +6,14 @@ if (!REDIS_URL) {
   process.exit(1);
 }
 
-const connection = { url: REDIS_URL };
+const connection = { url: process.env.REDIS_URL! };
 
 /**
  * Worker for the "jobs" queue:
  * Supports http_ping job type with input/payload { url: string }
  */
 const worker = new Worker(
-  "jobs",
+  "jobs", 
   async (job: Job) => {
     if (job.name !== "http_ping") {
       throw new Error(`Unsupported job type: ${job.name}`);
@@ -41,7 +41,10 @@ const worker = new Worker(
 
     return { status: res.status, latencyMs };
   },
-  { connection }
+  { 
+    connection,
+    prefix: "avautorun",
+  }
 );
 
 worker.on("completed", (job, rv) => {

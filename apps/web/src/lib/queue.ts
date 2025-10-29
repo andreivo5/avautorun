@@ -7,6 +7,6 @@ export function getQueue() {
   if (!process.env.REDIS_URL) {
     throw new Error("REDIS_URL not set");
   }
-  if (!q) q = new Queue("jobs", { connection });
+  if (!q) q = new Queue("jobs", { connection: { url: process.env.REDIS_URL! }, prefix: "avautorun" });
   return q;
 }
