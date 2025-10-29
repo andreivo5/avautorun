@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Job {
+  id          String   @id @default(cuid())
+  queueId     String
+  type        String
+  url         String
+  status      String
+  latencyMs   Int?
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  log         String?
+  logs        JobLog[]     // ← add this line for the relation
+}
+
+model JobLog {
+  id        String   @id @default(cuid())
+  jobId     String
+  message   Json
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}

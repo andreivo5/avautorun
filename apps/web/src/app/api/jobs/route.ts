@@ -1,19 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getQueue } from "@/lib/queue";
+import { prisma } from "@/lib/db";
 
-export async function POST(req: NextRequest) {
-  const { type, url } = await req.json();
+export const runtime = "nodejs";
 
-  if (type !== "http_ping" || !url) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
-  }
+export async function POST(req: Request) {
+  const { url } = await req.json();
+  const q = getQueue();
+  const job = await q.add("http_ping", { url }, { attempts: 3, backoff: { type: "exponential", delay: 1000 } });
 
-  const queue = getQueue();
-  const job = await queue.add(
-    "http_ping",
-    { url },
-    { attempts: 3, backoff: { type: "exponential", delay: 1000 } }
-  );
+  await prisma.job.create({
+    data: { queueId: String(job.id), type: "http_ping", url, status: "waiting" }
+  });
 
   return NextResponse.json({ id: job.id });
 }

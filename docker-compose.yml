@@ -12,6 +12,7 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://av:av@db:5432/avautorun
       NODE_ENV: development
       PORT: 3000
       NEXT_TELEMETRY_DISABLED: "1"
@@ -35,9 +36,23 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://av:av@db:5432/avautorun
       NODE_ENV: development
     depends_on:
       - redis
     volumes:
       - ./services/worker:/app
       - /app/node_modules
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: av
+      POSTGRES_PASSWORD: av
+      POSTGRES_DB: avautorun
+    ports: ["5432:5432"]
+    volumes: [pg:/var/lib/postgresql/data]
+
+volumes:
+  pg:
+
